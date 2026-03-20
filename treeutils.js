@@ -1,133 +1,84 @@
 import { BinaryTreeNode } from "./BinaryTreeNode.js";
 
 export const DEFAULT_CONFIG = {
-  radius: 20,
-  nodeWidthSpacing: 25, // width spacing
-  nodeHeightSpacing: 100, // line height
-  nodeFontSize: 10, // font size
+    radius: 22,
+    nodeHeightSpacing: 100,
 };
 
-export function getRequiredHeightAndWidth(root) {
-  const heightOfTree = root.getHeight(); // calculate the height of canvas
-  const maxLeafNodes = Math.pow(2, heightOfTree); // calculate the width of canvas
+export class LevelOrderTree {
+    constructor() { this.root = null; }
 
-  const requiredCanvasHeight = heightOfTree * DEFAULT_CONFIG.nodeHeightSpacing; // calculate the height of canvas
-  const requiredCanvasWidth = maxLeafNodes * DEFAULT_CONFIG.nodeWidthSpacing; // calculate the width of canvas
+    // Builds a balanced tree from comma-separated values
+    build(values) {
+        if (!values.length || values[0] === "") { this.root = null; return; }
+        
+        this.root = new BinaryTreeNode(values[0]);
+        const queue = [this.root];
+        let i = 1;
 
-  return {
-    requiredCanvasHeight,
-    requiredCanvasWidth,
-  };
-}
-
-export function drawNode(value, canvasElement, x, y) {
-  const context = canvasElement.getContext("2d"); // tool to draw
-
-  // draw circle
-
-  context.beginPath();
-  context.arc(x, y, DEFAULT_CONFIG.radius, 0, 2 * Math.PI, false);
-  context.fillStyle = "lightsalmon";
-  context.fill();
-
-  // draw circle border
-
-  context.beginPath();
-  context.arc(x, y, DEFAULT_CONFIG.radius, 0, 2 * Math.PI, false);
-  context.strokeStyle = "brown";
-  context.stroke();
-
-  // write value
-
-  context.font = `${DEFAULT_CONFIG.nodeFontSize}pt serif`;
-  context.fillStyle = "brown";
-  context.textAlign = "center";
-  context.fillText(value, x, y + DEFAULT_CONFIG.nodeFontSize / 2);
-}
-
-// Connecting edges of nodes
-export function connectEdges(canvasElement, xCoordinates, yCoordinates) {
-  const { xStart, xEnd } = xCoordinates;
-  const { yStart, yEnd } = yCoordinates;
-
-  const xHalf = (xStart + xEnd) / 2;
-  const yHalf = (yStart + yEnd) / 2;
-
-  const start = { x: xStart, y: yStart };
-  const cPoint1 = { x: xHalf, y: yHalf };
-  const cPoint2 = { x: xEnd, y: yHalf };
-  const end = { x: xEnd, y: yEnd };
-
-  // draw curve
-
-  const context = canvasElement.getContext("2d");
-  context.beginPath();
-  context.strokeStyle = "brown";
-  context.moveTo(start.x, start.y);
-
-  context.bezierCurveTo(
-    cPoint1.x,
-    cPoint1.y,
-    cPoint2.x,
-    cPoint2.y,
-    end.x,
-    end.y
-  );
-  // context.lineTo(end.x, end.y);
-
-  context.stroke();
-}
-
-export function treeConstructor(input) {
-  input = parseInput(input);
-
-  const queue = [];
-
-  let idx = 0;
-
-  const root = new BinaryTreeNode(input[idx]);
-  idx++;
-
-  queue.push(root);
-
-  while (queue.length > 0 && idx < input.length) {
-    const node = queue.shift();
-
-    // Left child
-    if (idx < input.length) {
-      if (input[idx] !== null) {
-        const leftNode = new BinaryTreeNode(input[idx]);
-        node.setLeft(leftNode);
-        queue.push(leftNode);
-      }
-      idx++;
+        while (queue.length > 0 && i < values.length) {
+            const current = queue.shift();
+            // Left Child
+            if (i < values.length) {
+                if (values[i] !== "null") {
+                    current.left = new BinaryTreeNode(values[i]);
+                    queue.push(current.left);
+                }
+                i++;
+            }
+            // Right Child
+            if (i < values.length) {
+                if (values[i] !== "null") {
+                    current.right = new BinaryTreeNode(values[i]);
+                    queue.push(current.right);
+                }
+                i++;
+            }
+        }
     }
 
-    // Right Child
-
-    if (idx < input.length) {
-      if (input[idx] !== null) {
-        const rightNode = new BinaryTreeNode(input[idx]);
-        node.setRight(rightNode);
-        queue.push(rightNode);
-      }
-      idx++;
+    getTraversal(type) {
+        const start = performance.now();
+        const result = [];
+        if (type === 'preorder') this._preOrder(this.root, result);
+        else if (type === 'inorder') this._inOrder(this.root, result);
+        else if (type === 'postorder') this._postOrder(this.root, result);
+        return { result, time: (performance.now() - start).toFixed(4) };
     }
-  }
 
-  return root;
+    _preOrder(n, r) { if(n) { r.push(n.value); this._preOrder(n.left, r); this._preOrder(n.right, r); } }
+    _inOrder(n, r) { if(n) { this._inOrder(n.left, r); r.push(n.value); this._inOrder(n.right, r); } }
+    _postOrder(n, r) { if(n) { this._postOrder(n.left, r); this._postOrder(n.right, r); r.push(n.value); } }
 }
 
-function parseInput(input) {
-  let parseInput = "";
+export function drawNode(value, ctx, x, y) {
+    // Outer Glow
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "rgba(4, 42, 56, 0.8)";
+    
+    // Gradient fill (Light blue to Cyan)
+    const grad = ctx.createRadialGradient(x, y, 2, x, y, DEFAULT_CONFIG.radius);
+    grad.addColorStop(0, "#bae6fd"); 
+    grad.addColorStop(1, "#0fb4fa");
 
-  for (let i = 0; i < input.length; i++) {
-    const ch = input.charAt(i);
-    if (ch !== "") parseInput += ch;
-  }
+    ctx.beginPath();
+    ctx.arc(x, y, DEFAULT_CONFIG.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = grad;
+    ctx.fill();
 
-  return parseInput.split(",").map((elem) => {
-    if (elem === "null") return null;
-    else return elem;
-  });
+    // Text Styling
+    ctx.shadowBlur = 0;
+    ctx.font = `600 11pt Inter, sans-serif`;
+    ctx.fillStyle = "#082f49";
+    ctx.textAlign = "center";
+    ctx.fillText(value, x, y + 6);
+}
+
+export function connectEdges(ctx, x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.3)"; // Subtle greyish-blue
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2, x2, y2);
+    ctx.stroke();
 }

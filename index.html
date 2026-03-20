@@ -1,20 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My-binary Tree Visualizer</title>
+    <title>TreeViz — BST Analytics</title>
     <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="inputContainer">
-      <textarea class="input" rows="5"></textarea>
-      <div class="actionBtns">
-        <button class="applyBtn">Apply</button>
-        <button class="clearBtn">Clear</button>
-      </div>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-panel">
+        <header>
+            <h1>TreeViz</h1>
+            <p>Execution Time Analysis</p>
+        </header>
+        
+        <div class="inputContainer">
+            <textarea class="input" placeholder="e.g. 50, 30, 70, 20, 40" rows="3"></textarea>
+            
+            <div class="actionBtns">
+                <button class="applyBtn">Apply</button>
+                <button class="clearBtn">Clear</button>
+            </div>
+
+            <div class="section-label">Traversals</div>
+            <div class="traversalBtns">
+                <button class="tBtn" id="preBtn">Pre</button>
+                <button class="tBtn" id="inoBtn">In</button>
+                <button class="tBtn" id="posBtn">Post</button>
+            </div>
+
+            <div class="result-display">
+                <div id="resType">Ready...</div>
+                <div id="resPath">-</div>
+                <div id="resTime">0.0000 ms</div>
+            </div>
+        </div>
     </div>
-    <canvas></canvas>
+
+    <canvas id="treeCanvas"></canvas>
     <script type="module" src="drawBinaryTree.js"></script>
-  </body>
+</body>
 </html>
